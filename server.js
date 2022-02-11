@@ -3,7 +3,7 @@ const express = require('express')
 var cors=require('cors')
 const vehicleRoutes = require('./src/vehicle/routes')
 const app = express();
-const port = 3000;
+const port = 4000;
 
 app.use(express.json());
 app.use(cors())
