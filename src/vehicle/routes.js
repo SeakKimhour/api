@@ -4,11 +4,46 @@ const routes =Router();
 const pool = require('../../db');
 const bcrypt = require('bcrypt');
 const jwtGenerator = require('../../utils/jwtGenerator');
-const validInfo= require('../../middleware/validInfo');
 const authorization= require('../../middleware/authorization');
 
 //jwt
-routes.post('/login',validInfo,async (req, res) => {
+routes.post('/register', async (req, res) => {
+    try {
+
+        //1. destructure the req.body (name,email,password)
+
+        const { username, user_password } = req.body;
+
+        //2 . check is user exist (if user exist then th row error)
+
+        const user = await pool.query("SELECT * FROM users WHERE users_name = $1", [username],);
+        if (user.rows.length !== 0) {
+            return res.status(401).send("user already exists");
+        }
+
+        //3. Bcrypt the user password
+
+        const saltRound = 10;
+
+        const salt = await bcrypt.genSalt(saltRound)
+
+        const bcryptPassword = await bcrypt.hash(user_password, salt)
+
+        //4. enter the new inside our database
+
+        const newUser = await pool.query("INSERT INTO users( users_name,users_password) VALUES($1,$2) RETURNING *", [username, bcryptPassword]);
+
+        //5. generate our jwt token
+        const token = jwtGenerator(newUser.rows[0]["user_id"])
+        res.json({token});
+    } catch (error) {
+        res.status(500).send("Server error")
+    }
+})
+
+
+
+routes.post('/login',async (req, res) => {
     try {
        
        //1. destructure the req.body
@@ -35,7 +70,7 @@ routes.post('/login',validInfo,async (req, res) => {
        res.json({token});
 
     } catch (error) {
-        console.error(err.message);
+        console.error(error.message);
         res.status(500).send("Server error")
     }
 })
@@ -43,7 +78,7 @@ routes.get('/is-verify', authorization,async(req, res) => {
    try {
        res.json(true);
    } catch (error) {
-       console.err(err.message);
+       console.error(err.message);
        res.status(500).send("Server error")
    }
 })
@@ -52,4 +87,5 @@ routes.get('/:id',controller.getVehicleById)
 routes.post('/',controller.addVehicle)
 routes.delete('/:id',controller.deleteVehicle)
 routes.put('/:id',controller.updateVehicle)
+routes.delete('/delete/all',controller.deleteALL)
 module.exports=routes;

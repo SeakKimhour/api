@@ -6,7 +6,7 @@ function jwtGenerator(user_id){
         users: user_id
     }
     return jwt.sign(payload,process.env.jwtSecret,{
-        expiresIn:'1hr'
+        expiresIn:'1h'
     })
 }
 

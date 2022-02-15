@@ -29,7 +29,6 @@ const addVehicle = (req, res) => {
                 }
             })
         }
-
     })
 }
 const deleteVehicle = (req, res) => {
@@ -46,17 +45,12 @@ const deleteVehicle = (req, res) => {
                 }
             })
         }
-
-
     })
 }
 const updateVehicle = (req, res) => {
     const id = parseInt(req.params.id);
-
     let { type, model, price } = req.body
-
     pool.query(queries.getVehicleById, [id], (error, result) => {
-
         const noVehicleFound = result.rows.length;
         const oldType = result.rows[0]['type'];
         const oldModel = result.rows[0]['model'];
@@ -67,43 +61,34 @@ const updateVehicle = (req, res) => {
             if (model != "" && type == "" && price == "") {
               type=oldType
               price=oldPrice
-
-
             } else if (model == "" && type != "" && price == "") {
                model=oldModel
                price=oldPrice
-
             } else if (model == "" && type == "" && price != "") {
               model=oldModel
               type=oldType
-
             } else if (model != "" && type != "" && price == "") {
-
                 price = oldPrice
-
-
             } else if (model != "" && type == "" && price != "") {
                 type += oldType
-    
-
-
             } else if (model == "" && type != "" && price != "") {
                 model = oldModel
             }
             pool.query(queries.updateVehicle, [type, model, price, id], (error, result) => {
-
                 if (error) throw error; {
-
                     res.status(200).send("Vehicle update successfully.")
-
                 }
             })
         }
     })
 }
 const deleteALL = (req, res) =>{
-
+    pool.query(queries.deleteALL,(error, result) =>{
+        if(error)throw error; {
+            res.status(200).send("Delete Successfully.")
+        }
+    })
 }
 module.exports = {
-    getVehicle, getVehicleById, addVehicle, deleteVehicle, updateVehicle,
-}
+    getVehicle, getVehicleById, addVehicle, deleteVehicle, updateVehicle,deleteALL
+}   
